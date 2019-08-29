@@ -1,3 +1,4 @@
+# import necessary libraries
 from sqlalchemy import func
 
 from flask import (
@@ -15,6 +16,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///db/test.sqlite"
 
 db = SQLAlchemy(app)
 
+
 class Ufo(db.Model):
     __tablename__ = 'ufo'
 
@@ -28,9 +30,66 @@ class Ufo(db.Model):
     city_latitude= db.Column(db.Float)
     city_longitude = db.Column(db.Float)
 
+
     def __repr__(self):
-        return '<Ufo %r>' % (self.id)
-    
+        return '<Ufo%r>' % (self.name)
+
+
+
+# create route that renders index.html template
 @app.route("/")
 def home():
     return render_template("index.html")
+
+
+# create route that returns data for plotting
+@app.route("/api/city")
+def getCity():
+    results = db.session.query(Ufo.city, func.count(Ufo.city)).group_by(Ufo.city).all()
+
+    ufo_city = [result[0] for result in results]
+    count = results.count()
+
+    trace = {
+        "x": ufo_city,
+        "y": count,
+        "type": "bar"
+    }
+
+    return jsonify(trace)
+
+@app.route("/api/state")
+def getState():
+    results = db.session.query(Ufo.state, func.count(Ufo.state)).group_by(Ufo.state).all()
+
+    ufo_state = [result[0] for result in results]
+    count = results.count()
+
+    trace = {
+        "x": ufo_state,
+        "y": count,
+        "type": "bar"
+    }
+
+    return jsonify(trace)
+
+@app.route("/api/state")
+def getState():
+    results = db.session.query(Ufo.state, func.count(Ufo.state)).group_by(Ufo.state).all()
+
+    ufo_state = [result[0] for result in results]
+    count = results.count()
+
+    trace = {
+        "x": ufo_state,
+        "y": count,
+        "type": "bar"
+    }
+
+    return jsonify(trace)
+
+
+
+
+if __name__ == "__main__":
+    app.run()
